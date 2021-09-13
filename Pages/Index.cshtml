@@ -1,0 +1,19 @@
+﻿@page
+@using FetchRewards.Website.Components;
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+</div>
+@*immediately render to Razor pages. why?
+MVC actions. I like to auto update fields using GET() from the router.
+Works half the time I want it to, but this is the future, baby.
+Also, we can use HTML views, return JSON / files at will, or anything using C# 
+code much easier.
+At least, in my experience of C# its easier than Javascript or PHP.*@
+@(await Html.RenderComponentAsync<ProductList>(RenderMode.ServerPrerendered))
+
+<script src="_framework/blazor.server.js"></script>

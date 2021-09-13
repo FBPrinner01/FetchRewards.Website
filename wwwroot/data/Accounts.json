@@ -1,0 +1,32 @@
+[
+  {
+    "ID": "FBPrinner01",
+    "Transactions": [
+      {
+        "Payer": "MILLER COORS",
+        "Timestamp": "2020-11-01T14:00:00Z",
+        "Points": 10000
+      },
+      {
+        "Payer": "DANNON",
+        "Timestamp": "2020-11-02T14:00:00Z",
+        "Points": 1000
+      },
+      {
+        "Payer": "UNILEVER",
+        "Timestamp": "2020-10-31T11:00:00Z",
+        "Points": 200
+      },
+      {
+        "Payer": "DANNON",
+        "Timestamp": "2020-10-31T15:00:00Z",
+        "Points": -200
+      },
+      {
+        "Payer": "DANNON",
+        "Timestamp": "2020-10-31T10:00:00Z",
+        "Points": 300
+      }
+    ]
+  }
+]

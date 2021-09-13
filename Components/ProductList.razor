@@ -1,0 +1,145 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using FetchRewards.Website.Models
+@using FetchRewards.Website.Service
+@inject JsonFileProductService ProductService
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+<h3>Rewards & Points</h3>
+
+
+<div class="user">
+    @*This section populates our users and their transactions. Since we're only testing this for one user, 
+        we will save time and just program for FBPrinner01'*@
+    @foreach (var user in ProductService.GetAccounts())
+    {
+        <div class="card">
+            <div class=" = card-img" style="background-image: url('');">
+                <div class="card-body">
+                    <h5 class="card-title">@user.ID's Reward History</h5>
+                    <table style="width: 800px;">
+                        <tr><th>Payer</th> <th>Points</th> <th>Time Stamp</th></tr>
+                        @foreach (var transaction in user.Transactions)
+                        {
+                            <tr>
+                                <td>@transaction.Payer</td>
+                                <td>@transaction.Points</td>
+                                <td>@transaction.Timestamp</td>
+                            </tr>
+                        }
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="totals">
+    @*This section uses the getTotal(List<Transaction) method to get our total for each payer*@
+    @foreach (var user in ProductService.GetAccounts())
+    {
+        <div class="card">
+            <div class=" = card-img" style="background-image: url('');">
+                <div class="card-body">
+                    <h5 class="card-title">@user.ID's Points</h5>
+                    <table style="width: 800px;">
+                        <tr><th>Payer</th> <th>Points</th></tr>
+
+                        @foreach (var transaction in getTotal( user.Transactions.ToList() ))
+                        {
+                            <tr>
+                                <td>@transaction.Payer</td>
+                                <td>@transaction.Points</td>
+                            </tr>
+                        }
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="transaction">
+    <h5> Add Transaction</h5>
+    <input type="text" id="txtpayer" name="payer" placeholder="payer" @bind="@payer" @oninput="@(e=> {payer=(string)e.Value;})"> @*everytime a value is entered, update the payer variable*@
+    <input id="txtpoints" name="txtpoints" type="number" placeholder="00" @bind="@points" @oninput="@(e=> {points=(string)e.Value;})">@*everytime a value is entered, update the points variable*@
+    <input type="submit" @onclick="(e => addTransaction(payer, int.Parse(points)) )" /> @*when clicked, we add a transaction to our user's list of transactions. timestamp is calculated in later.'*@
+</div>
+
+<div class="spend-points">
+    @*Same thing as addTransaction section: bind a value for points (pointsSpend) and update oninput. Then, call spendPoints when submit is clicked*@
+    <h5 class="card-title" id="newTransaction" name="newTransaction"> Spend Points</h5>
+    <input type="number" id="pointsSpend" name="points" placeholder=0 @bind="@pointsSpend" @oninput="@(e=> {pointsSpend=(string)e.Value;})" />
+    <input type="submit" @onclick="(e => spendPoints(int.Parse(pointsSpend)) )" />
+</div>
+
+
+@code
+{
+    //these are basically global values.Instead of routing data to the server and bogging it down, we will
+    //let the backend machine process data.
+    private string payer { get; set; } = "Payer";
+    private string points { get; set; } = "0";
+    private string pointsSpend { get; set; } = "0";
+
+    void addTransaction(string addPayer, int addPoints)
+    {
+        //check to make sure addPoints is greater than zero, then add to the Json File in JsonFileProductService.
+        if (addPoints <= 0)
+        {
+            Console.WriteLine("We cannot process transactions equal to 0 or less.");
+            //for some reason, this does not work as intended.I couldn't figure out via google
+            //why I can't write to console 
+        }
+        else
+        {
+            ProductService.AddTransaction(addPayer, addPoints);
+            payer = ""; //reset this value upon completion of tasks. We don't need to see lingering data.
+            points = "0"; //same reason as payer; reset!
+        }
+    }
+
+    public List<Transaction> getTotal(List<Transaction> L)
+    {
+        //getTotal sends a list of transactions to the backend, processes each payer and their total points
+        //so the user knows what of each they have.
+
+        List<Transaction> List = new List<Transaction>(); //return variable, populate with Payers and their total points
+        foreach (var transaction in L)
+        {
+            bool inList = false; //if Payer is in the List, this will become true. if false, add it.
+
+            for (var i = 0; i < List.Count; i++)
+            {
+                //compare transaction.payer and List[i].payer. if it they're the same, add payer and points to T
+                //otherwise, we don't that payer in the list and inList will remain false. Do NOTHING until we 
+                //exit this for loop if that is the case:
+
+                if( List[i].Payer == transaction.Payer )
+                {
+                    List[i].Points += transaction.Points;
+                    inList = true;
+                }
+            }
+            if (inList == false)
+            {
+                //add the whole transaction to the list. 
+                //we don't need the timestamps, but this is the shortest solution.
+                List.Add(transaction);
+            }
+
+        }
+        //List is now populated with individual Payers the their total points.
+        return List;
+    }
+
+    void spendPoints(int points)
+    {
+        //send data to ProductService.SpendPoints(points) to modifiy data
+        ProductService.SpendPoints(points);
+        pointsSpend = "0";
+
+    }
+}
